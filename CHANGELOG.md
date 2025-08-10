@@ -1,5 +1,17 @@
 # rts.js
 
+## 0.0.9
+
+### Patch Changes
+
+- 24bee34: correct exports configuration
+
+  - Move `exports` from `publishConfig` to the package root so Node can resolve it
+  - Prefix all subpath keys with "./"
+  - Replace wildcard "_" with "./_"
+  - Add explicit "./register" export
+  - Keep "./package.json" export
+
 ## 0.0.8
 
 ### Patch Changes
