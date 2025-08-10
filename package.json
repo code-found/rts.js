@@ -12,12 +12,19 @@
     "main": "dist/cjs/index.js",
     "bin": {
       "rts": "dist/cjs/bin/index.js"
+    },
+    "exports": {
+      ".": "./dist/cjs/index.js",
+      "./package.json": "./package.json",
+      "*": "./dist/cjs/*",
+      "register": "./dist/cjs/register.js"
     }
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/pallyoung/rts.git"
   },
+
   "files": [
     "dist",
     "src",
