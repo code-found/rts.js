@@ -1,5 +1,11 @@
 # rts.js
 
+## 0.0.8
+
+### Patch Changes
+
+- 5ec638c: correct exports configuration
+
 ## 0.0.7
 
 ### Patch Changes
