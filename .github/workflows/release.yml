@@ -41,6 +41,8 @@ jobs:
       - name: Changesets - Version or Publish
         uses: changesets/action@v1
         with:
+          commit: "chore: update versions"
+          title: "chore: update versions"
           version: pnpm run changeset:version
           publish: pnpm run changeset:publish
         env:
