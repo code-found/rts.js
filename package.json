@@ -14,10 +14,21 @@
       "rts": "dist/cjs/bin/index.js"
     },
     "exports": {
-      ".": "./dist/cjs/index.js",
-      "./package.json": "./package.json",
-      "./register": "./dist/cjs/register.js",
-      "./*": "./dist/cjs/*.js"
+      ".": {
+        "types": "./src/index.ts",
+        "import": "./dist/esm/index.js",
+        "require": "./dist/cjs/index.js"
+      },
+      "./register": {
+        "types": "./src/register.ts",
+        "import": "./dist/esm/register.js",
+        "require": "./dist/cjs/register.js"
+      },
+      "./*": {
+        "types": "./src/*.ts",
+        "import": "./dist/esm/*.js",
+        "require": "./dist/cjs/*.js"
+      }
     }
   },
   "repository": {
@@ -68,7 +79,8 @@
   "author": "Spencer",
   "license": "ISC",
   "dependencies": {
-    "@swc/core": "^1.13.3"
+    "@swc/core": "^1.13.3",
+    "t-packer": "^0.0.1"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.1.3",

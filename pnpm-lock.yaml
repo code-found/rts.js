@@ -11,6 +11,9 @@ importers:
       '@swc/core':
         specifier: ^1.13.3
         version: 1.13.3
+      t-packer:
+        specifier: ^0.0.1
+        version: 0.0.1
     devDependencies:
       '@biomejs/biome':
         specifier: ^2.1.3
@@ -464,6 +467,10 @@ packages:
   color-name@1.1.4:
     resolution: {integrity: sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA==}
 
+  commander@14.0.0:
+    resolution: {integrity: sha512-2uM9rYjPvyq39NwLRqaiLtWHyDC1FvryJDa2ATTVims5YAS4PupsEQsDvP14FqhFr0P49CYDugi59xaxJlTXRA==}
+    engines: {node: '>=20'}
+
   common-path-prefix@3.0.0:
     resolution: {integrity: sha512-QE33hToZseCH3jS0qN96O/bSh3kaw/h+Tq7ngyY9eWDUnTlTNUyqfqvCXioLe5Na5jFsL78ra/wuBU4iuEgd4w==}
 
@@ -676,6 +683,10 @@ packages:
   indent-string@5.0.0:
     resolution: {integrity: sha512-m6FAo/spmsW2Ab2fU35JTYwtOKa2yAwXSwgjSv1TJzh4Mh7mC3lzAOVLBprb72XsTrgkEIsl7YrFNAiDiRhIGg==}
     engines: {node: '>=12'}
+
+  install@0.13.0:
+    resolution: {integrity: sha512-zDml/jzr2PKU9I8J/xyZBQn8rPCAY//UOYNmR01XwNwyfhEWObo2SWfSl1+0tm1u6PhxLwDnfsT/6jB7OUxqFA==}
+    engines: {node: '>= 0.10'}
 
   irregular-plurals@3.5.0:
     resolution: {integrity: sha512-1ANGLZ+Nkv1ptFb2pa8oG8Lem4krflKuX/gINiHJHjJUKaJHk/SXk5x6K3J+39/p0h1RQ2saROclJJ+QLvETCQ==}
@@ -936,6 +947,11 @@ packages:
     resolution: {integrity: sha512-VP/72JeXqak2KiOzjgKtQen5y3IZHn+9GOuLDafPv0eXa47xq0At93XahYBs26MsifCQ4enGKwbjBTKgb9QJXg==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
 
+  pnpm@10.14.0:
+    resolution: {integrity: sha512-rSenlkG0nD5IGhaoBbqnGBegS74Go40X5g4urug/ahRsamiBJfV5LkjdW6MOfaUqXNpMOZK5zPMz+c4iOvhHSA==}
+    engines: {node: '>=18.12'}
+    hasBin: true
+
   prettier@2.8.8:
     resolution: {integrity: sha512-tdN8qQGvNjw4CHbY+XXk0JgCXn9QiF21a55rBe5LJAU+kDyC4WQn4+awm2Xfk2lQMk5fKup9XgzTZtGkjBdP9Q==}
     engines: {node: '>=10.13.0'}
@@ -1051,6 +1067,11 @@ packages:
   supports-color@7.2.0:
     resolution: {integrity: sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw==}
     engines: {node: '>=8'}
+
+  t-packer@0.0.1:
+    resolution: {integrity: sha512-yeK1Vhjq4ZVgkKezY2dBkVZWKY9tRYwSmuIX1wqJ5/K2dxNKgBLaVTLMwvMoBLCKXFj263KNdqxKEBZADzlSsg==}
+    engines: {node: '>=18'}
+    hasBin: true
 
   tar@7.4.3:
     resolution: {integrity: sha512-5S7Va8hKfV7W5U6g3aYxXmlPoZVAwUMy9AOKyF2fVuZa2UD3qZjg578OrLRt8PcNN1PleVaL/5/yYATNL0ICUw==}
@@ -1651,6 +1672,8 @@ snapshots:
 
   color-name@1.1.4: {}
 
+  commander@14.0.0: {}
+
   common-path-prefix@3.0.0: {}
 
   concordance@5.0.4:
@@ -1848,6 +1871,8 @@ snapshots:
 
   indent-string@5.0.0: {}
 
+  install@0.13.0: {}
+
   irregular-plurals@3.5.0: {}
 
   is-extglob@2.1.1: {}
@@ -2043,6 +2068,8 @@ snapshots:
     dependencies:
       irregular-plurals: 3.5.0
 
+  pnpm@10.14.0: {}
+
   prettier@2.8.8: {}
 
   pretty-ms@9.2.0:
@@ -2148,6 +2175,15 @@ snapshots:
   supports-color@7.2.0:
     dependencies:
       has-flag: 4.0.0
+
+  t-packer@0.0.1:
+    dependencies:
+      '@swc/core': 1.13.3
+      commander: 14.0.0
+      install: 0.13.0
+      pnpm: 10.14.0
+    transitivePeerDependencies:
+      - '@swc/helpers'
 
   tar@7.4.3:
     dependencies:
