@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import Module, { type ResolveHookContext } from "node:module";
-import path from "node:path";
+import path, { dirname, resolve } from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 import { ModuleTransformer, type TransformerHook } from "t-packer";
@@ -25,6 +25,38 @@ interface ModuleWithInternals {
     (mod: NodeModuleLike, filename: string) => unknown
   >;
 }
+export const EXTENSIONS = [
+  ".js",
+  ".ts",
+  ".jsx",
+  ".tsx",
+  ".mjs",
+  ".cjs",
+  ".json",
+];
+
+// check if the filename has a extension
+export const hasExtension = (filename: string) => /\.[^.]+$/.test(filename);
+
+const exists = (path: string) => fs.existsSync(path);
+export const tryToFindFile = (filename: string) => {
+  if (exists(filename)) {
+    if (fs.statSync(filename).isDirectory()) {
+      filename = `${filename}${path.sep}index`;
+    } else {
+      return filename;
+    }
+  }
+  if (hasExtension(filename)) {
+    return fs.existsSync(filename) ? filename : null;
+  }
+  for (const ext of EXTENSIONS) {
+    if (fs.existsSync(filename + ext)) {
+      return filename + ext;
+    }
+  }
+  return null;
+};
 
 /**
  * Module resolver class that handles module path resolution and caching
@@ -42,7 +74,7 @@ export class ModuleResolver extends ModuleTransformer {
   /** Cache for resolved module paths to improve performance */
   private cache: Map<string, string> = new Map();
   /** Map of module aliases to their target paths */
-  private aliases: Map<string, string[]> = new Map();
+  private aliases: [string, string[]][] = [];
 
   /** Store original loaders for cleanup */
   private oldLoaders: Map<
@@ -82,10 +114,12 @@ export class ModuleResolver extends ModuleTransformer {
    */
   setAlias(alias: Record<string, string[] | string>) {
     for (const [key, target] of Object.entries(alias)) {
-      if (Array.isArray(target)) {
-        this.aliases.set(key, target);
+      const targets = Array.isArray(target) ? target : [target];
+      const alias = this.aliases.find(([alias]) => alias === key);
+      if (alias) {
+        alias[1].push(...targets.filter((t) => !alias[1].includes(t)));
       } else {
-        this.aliases.set(key, [target]);
+        this.aliases.push([key, targets]);
       }
     }
   }
@@ -102,18 +136,29 @@ export class ModuleResolver extends ModuleTransformer {
       // Use native registerHooks for Node.js >=24
       this.revertRegister = Module.registerHooks({
         resolve: (specifier, context, nextResolve) => {
+          // 支持 ts
           const { url } = this.resolve(specifier, context);
-          return nextResolve(url ?? specifier, context);
-        },
-        load: (url, parent, nextLoad) => {
-          const result = this.load(url);
-          if (result) {
+          if (url) {
             return {
-              format: result.format as any,
-              source: result.code,
+              url,
               shortCircuit: true,
             };
           }
+          return nextResolve(specifier, context);
+        },
+        load: (url, parent, nextLoad) => {
+          // if it is not a builtin module
+          if (url.includes(path.sep)) {
+            const result = this.load(url);
+            if (result) {
+              return {
+                format: result.format as any,
+                source: result.code,
+                shortCircuit: true,
+              };
+            }
+          }
+
           return nextLoad(url, parent);
         },
       });
@@ -181,20 +226,30 @@ export class ModuleResolver extends ModuleTransformer {
     specifier: string,
     context: ResolveHookContext,
   ): { url?: string } {
-    const cacheKey = `${specifier}:${context?.parentURL ?? ""}`;
+    const { parentURL = "" } = context;
+    const cacheKey = `${specifier}:${parentURL}`;
     let url = this.cache.get(cacheKey);
 
     if (!url) {
       // Check if the specifier matches any registered aliases
-      for (const [alias, target] of this.aliases) {
+      for (const [alias, targets] of [...this.aliases, ["", [""]] as const]) {
         if (specifier.startsWith(alias)) {
-          target.forEach((t) => {
-            url = specifier.replace(alias, t);
-            if (fs.existsSync(url)) {
-              this.cache.set(cacheKey, url);
-              return { url };
+          for (const target of targets) {
+            let file: string | null = null;
+            file = specifier.replace(alias, target);
+            // 2. 处理相对路径
+            if (file.startsWith("./") || file.startsWith("../")) {
+              file = parentURL ? resolve(dirname(parentURL), file) : file;
             }
-          });
+            if (file.includes(path.sep)) {
+              file = tryToFindFile(file ?? "");
+              if (file) {
+                url = file;
+                this.cache.set(cacheKey, url);
+                return { url };
+              }
+            }
+          }
         }
       }
     }
