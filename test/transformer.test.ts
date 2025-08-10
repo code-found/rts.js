@@ -25,6 +25,49 @@ test("TSX support should be available", (t) => {
   t.truthy(result.length > 0);
 });
 
+test("TSX should compile component with props and fragments", (t) => {
+  const code = `
+    import React from 'react';
+    type Props = { title: string; items: string[] };
+    export function List({ title, items }: Props) {
+      return (
+        <>
+          <h1>{title}</h1>
+          {items.map((it, i) => <div key={i}>{it}</div>)}
+        </>
+      );
+    }
+  `;
+  const mt = new ModuleTransformer();
+  const out = mt
+    .transformSync(Buffer.from(code), "list.tsx", {
+      target: "es2022",
+      module: "commonjs",
+    })
+    .code.toString();
+  t.is(typeof out, "string");
+  t.truthy(out.length > 0);
+});
+
+test("TSX should compile component with children and spread props", (t) => {
+  const code = `
+    import React, { type PropsWithChildren } from 'react';
+    type ButtonProps = PropsWithChildren<{ onClick?: () => void; [k: string]: any }>;
+    export const Button = ({ children, ...rest }: ButtonProps) => (
+      <button {...rest}>{children}</button>
+    );
+  `;
+  const mt = new ModuleTransformer();
+  const out = mt
+    .transformSync(Buffer.from(code), "button.tsx", {
+      target: "es2022",
+      module: "commonjs",
+    })
+    .code.toString();
+  t.is(typeof out, "string");
+  t.truthy(out.length > 0);
+});
+
 test("TSHook should transform TypeScript code", (t) => {
   const typescriptCode = `
     interface User {
