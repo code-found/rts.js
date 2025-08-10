@@ -1,5 +1,11 @@
 # rts.js
 
+## 0.0.7
+
+### Patch Changes
+
+- 22fc1d7: add exports filed
+
 ## 0.0.6
 
 ### Patch Changes
@@ -12,14 +18,14 @@
 
 - 3bd7414: CI/CD
   Replace manual Changesets version/publish with changesets/action@v1
-  Trigger release when a PR is merged into master; keep workflow*dispatch
+  Trigger release when a PR is merged into master; keep workflow\*dispatch
   Update permissions: contents: write, pull-requests: write, id-token: write
   Step order: Checkout → pnpm (v10) → Node 20 → Install → Test → Build → Changesets Action
   Tests
   Use system temporary directory via os.tmpdir() for all temp files (cross-platform)
   Unify cleanup with fs.rmSync(..., { recursive: true, force: true })
   Remove test/temp directory and related references
-  Update ava.config.js (remove exclude for test/temp/\**/\_.ts)
+  Update ava.config.js (remove exclude for test/temp/\*\*/\_.ts)
   Docs
   Update test/README.md to document the new temp file strategy
   Config/Misc
