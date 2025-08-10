@@ -20,7 +20,7 @@ test("ModuleResolver should be instantiable", (t) => {
 test("ModuleResolver should accept initial transformers", (t) => {
   const transformer: TransformerHook = {
     exts: [".ts"],
-    hook: (code: string) => code,
+    transformSync: (code) => ({ code }),
   };
 
   const resolver = new ModuleResolver([transformer]);
@@ -87,7 +87,9 @@ test("addTransformer should register a transformer", (t) => {
   const resolver = new ModuleResolver();
   const transformer: TransformerHook = {
     exts: [".css"],
-    hook: (code: string) => `export default ${JSON.stringify(code)};`,
+    transformSync: (code) => ({
+      code: `module.exports = ${JSON.stringify(code.toString())};`,
+    }),
   };
 
   resolver.addTransformer(transformer);
@@ -104,7 +106,9 @@ test("removeTransformer should remove a transformer", (t) => {
   const resolver = new ModuleResolver();
   const transformer: TransformerHook = {
     exts: [".css"],
-    hook: (code: string) => `export default ${JSON.stringify(code)};`,
+    transformSync: (code) => ({
+      code: `module.exports = ${JSON.stringify(code.toString())};`,
+    }),
   };
 
   resolver.addTransformer(transformer);
@@ -125,7 +129,9 @@ test("register should set up hooks and work with actual module resolution", (t) 
   // Add a transformer for testing
   const transformer: TransformerHook = {
     exts: [".custom"],
-    hook: (code: string) => `module.exports = ${JSON.stringify(code)};`,
+    transformSync: (code) => ({
+      code: `module.exports = ${JSON.stringify(code.toString())};`,
+    }),
   };
   resolver.addTransformer(transformer);
 
@@ -178,7 +184,9 @@ test("revert should clean up hooks and restore normal behavior", (t) => {
   // Add a transformer
   const transformer: TransformerHook = {
     exts: [".custom"],
-    hook: (code: string) => `module.exports = ${JSON.stringify(code)};`,
+    transformSync: (code) => ({
+      code: `module.exports = ${JSON.stringify(code.toString())};`,
+    }),
   };
   resolver.addTransformer(transformer);
 
@@ -250,12 +258,12 @@ test("revert should be callable multiple times", (t) => {
 test("ModuleResolver should work with multiple transformers", (t) => {
   const transformer1: TransformerHook = {
     exts: [".ts"],
-    hook: (code: string) => `// Transformed TS\n${code}`,
+    transformSync: (code) => ({ code: code }),
   };
 
   const transformer2: TransformerHook = {
     exts: [".js"],
-    hook: (code: string) => `// Transformed JS\n${code}`,
+    transformSync: (code) => ({ code: code }),
   };
 
   const resolver = new ModuleResolver([transformer1]);
@@ -320,7 +328,7 @@ test("ModuleResolver should handle alias resolution with transformers", (t) => {
   // Add transformer
   const transformer: TransformerHook = {
     exts: [".js"],
-    hook: (code: string) => `// Transformed\n${code}`,
+    transformSync: (code) => ({ code }),
   };
   resolver.addTransformer(transformer);
 
@@ -389,12 +397,12 @@ test("ModuleResolver should handle transformer priority correctly", (t) => {
   // Add transformers in order - use different extensions to avoid conflicts
   const transformer1: TransformerHook = {
     exts: [".js"],
-    hook: (code: string) => `// First transformer\n${code}`,
+    transformSync: (code) => ({ code }),
   };
 
   const transformer2: TransformerHook = {
     exts: [".custom"],
-    hook: (code: string) => `// Second transformer\n${code}`,
+    transformSync: (code) => ({ code }),
   };
 
   resolver.addTransformer(transformer1);

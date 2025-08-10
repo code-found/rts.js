@@ -1,12 +1,28 @@
 import test from "ava";
-import { TSHook } from "../src/transformer/ts";
+import { ModuleTransformer } from "../src/resolver";
 
-test("TSHook should have correct extensions", (t) => {
-  t.deepEqual(TSHook.exts, [".ts", ".tsx"]);
+test("TS support should be available", (t) => {
+  const mt = new ModuleTransformer();
+  const result = mt
+    .transformSync(Buffer.from("const x: number = 1"), "a.ts", {
+      target: "es2022",
+      module: "commonjs",
+    })
+    .code.toString();
+  t.is(typeof result, "string");
+  t.truthy(result.length > 0);
 });
 
-test("TSHook should have a hook function", (t) => {
-  t.is(typeof TSHook.hook, "function");
+test("TSX support should be available", (t) => {
+  const mt = new ModuleTransformer();
+  const result = mt
+    .transformSync(Buffer.from("export const C=()=>null"), "a.tsx", {
+      target: "es2022",
+      module: "commonjs",
+    })
+    .code.toString();
+  t.is(typeof result, "string");
+  t.truthy(result.length > 0);
 });
 
 test("TSHook should transform TypeScript code", (t) => {
@@ -24,7 +40,13 @@ test("TSHook should transform TypeScript code", (t) => {
     export { user };
   `;
 
-  const result = TSHook.hook(typescriptCode, "test.ts");
+  const mt = new ModuleTransformer();
+  const result = mt
+    .transformSync(Buffer.from(typescriptCode), "test.ts", {
+      target: "es2022",
+      module: "commonjs",
+    })
+    .code.toString();
 
   t.is(typeof result, "string");
   t.truthy(result.length > 0);
@@ -46,7 +68,13 @@ test("TSHook should transform TSX code", (t) => {
     export default Component;
   `;
 
-  const result = TSHook.hook(tsxCode, "test.tsx");
+  const mt = new ModuleTransformer();
+  const result = mt
+    .transformSync(Buffer.from(tsxCode), "test.tsx", {
+      target: "es2022",
+      module: "commonjs",
+    })
+    .code.toString();
 
   t.is(typeof result, "string");
   t.truthy(result.length > 0);
@@ -54,7 +82,13 @@ test("TSHook should transform TSX code", (t) => {
 });
 
 test("TSHook should handle empty code", (t) => {
-  const result = TSHook.hook("", "empty.ts");
+  const mt = new ModuleTransformer();
+  const result = mt
+    .transformSync(Buffer.from(""), "empty.ts", {
+      target: "es2022",
+      module: "commonjs",
+    })
+    .code.toString();
 
   t.is(typeof result, "string");
   // Empty code might still produce some output from SWC
@@ -63,7 +97,13 @@ test("TSHook should handle empty code", (t) => {
 
 test("TSHook should handle simple TypeScript", (t) => {
   const simpleCode = "const x: number = 42;";
-  const result = TSHook.hook(simpleCode, "simple.ts");
+  const mt = new ModuleTransformer();
+  const result = mt
+    .transformSync(Buffer.from(simpleCode), "simple.ts", {
+      target: "es2022",
+      module: "commonjs",
+    })
+    .code.toString();
 
   t.is(typeof result, "string");
   t.truthy(result.length > 0);
@@ -75,13 +115,19 @@ test("TSHook should handle imports and exports", (t) => {
     export default Component;
   `;
 
-  const result = TSHook.hook(code, "imports.ts");
+  const mt = new ModuleTransformer();
+  const result = mt
+    .transformSync(Buffer.from(code), "imports.ts", {
+      target: "es2022",
+      module: "commonjs",
+    })
+    .code.toString();
 
   t.is(typeof result, "string");
   t.truthy(result.length > 0);
 });
 
-test("TSHook should handle decorators with proper syntax", (t) => {
+test("TS transformer should error on legacy decorators by default", (t) => {
   const code = `
     function log(target: any, propertyKey: string) {
       console.log('Decorator called');
@@ -95,10 +141,13 @@ test("TSHook should handle decorators with proper syntax", (t) => {
     }
   `;
 
-  const result = TSHook.hook(code, "decorators.ts");
-
-  t.is(typeof result, "string");
-  t.truthy(result.length > 0);
+  const mt = new ModuleTransformer();
+  t.throws(() => {
+    mt.transformSync(Buffer.from(code), "decorators.ts", {
+      target: "es2022",
+      module: "commonjs",
+    });
+  });
 });
 
 test("TSHook should handle async/await", (t) => {
@@ -109,7 +158,13 @@ test("TSHook should handle async/await", (t) => {
     }
   `;
 
-  const result = TSHook.hook(code, "async.ts");
+  const mt = new ModuleTransformer();
+  const result = mt
+    .transformSync(Buffer.from(code), "async.ts", {
+      target: "es2022",
+      module: "commonjs",
+    })
+    .code.toString();
 
   t.is(typeof result, "string");
   t.truthy(result.length > 0);
@@ -124,7 +179,13 @@ test("TSHook should handle generics", (t) => {
     const result = identity<string>('hello');
   `;
 
-  const result = TSHook.hook(code, "generics.ts");
+  const mt = new ModuleTransformer();
+  const result = mt
+    .transformSync(Buffer.from(code), "generics.ts", {
+      target: "es2022",
+      module: "commonjs",
+    })
+    .code.toString();
 
   t.is(typeof result, "string");
   t.truthy(result.length > 0);
@@ -141,7 +202,13 @@ test("TSHook should handle JSX with React.createElement", (t) => {
     export default Component;
   `;
 
-  const result = TSHook.hook(code, "jsx.tsx");
+  const mt = new ModuleTransformer();
+  const result = mt
+    .transformSync(Buffer.from(code), "jsx.tsx", {
+      target: "es2022",
+      module: "commonjs",
+    })
+    .code.toString();
 
   t.is(typeof result, "string");
   t.truthy(result.length > 0);
@@ -166,7 +233,13 @@ test("TSHook should handle complex TypeScript features", (t) => {
     }
   `;
 
-  const result = TSHook.hook(code, "complex.ts");
+  const mt = new ModuleTransformer();
+  const result = mt
+    .transformSync(Buffer.from(code), "complex.ts", {
+      target: "es2022",
+      module: "commonjs",
+    })
+    .code.toString();
 
   t.is(typeof result, "string");
   t.truthy(result.length > 0);

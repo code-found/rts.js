@@ -2,7 +2,10 @@ import fs from "node:fs";
 import Module, { type ResolveHookContext } from "node:module";
 import path from "node:path";
 import process from "node:process";
+import { fileURLToPath } from "node:url";
 import { ModuleTransformer, type TransformerHook } from "t-packer";
+
+export { ModuleTransformer, type TransformerHook };
 
 // Get Node.js major version for compatibility handling
 // `process.versions.node` is like "20.11.1"; take the first segment as a number
@@ -105,7 +108,11 @@ export class ModuleResolver extends ModuleTransformer {
         load: (url, parent, nextLoad) => {
           const result = this.load(url);
           if (result) {
-            return result;
+            return {
+              format: result.format as any,
+              source: result.code,
+              shortCircuit: true,
+            };
           }
           return nextLoad(url, parent);
         },
@@ -207,7 +214,11 @@ export class ModuleResolver extends ModuleTransformer {
    * @returns Transformed code with format information, or null if no transformation needed
    */
   private load(url: string): null | { format: string; code: string } {
-    const code = this.transformCode(fs.readFileSync(url, "utf-8"), url);
+    const filename = url.startsWith("file:") ? fileURLToPath(url) : url;
+    const code = this.transformCode(
+      fs.readFileSync(filename, "utf-8"),
+      filename,
+    );
     if (code) {
       return { format: "commonjs", code };
     }
