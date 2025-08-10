@@ -1,4 +1,4 @@
-import type { TransformerHook } from "../resolver";
+import type { TransformerHook } from "t-packer";
 
 /**
  * Configuration options for the RTS (Runtime Transformer System)
@@ -11,36 +11,25 @@ export interface RTSOptions {
 }
 
 /**
- * Deep merge two configuration objects
+ * Deep-merge two RTS configuration objects into a new object.
  *
- * This function performs a deep merge of configuration objects, allowing
- * for partial configuration updates. It recursively merges nested objects
- * and overwrites primitive values.
+ * - Does not mutate the `oldConfig` or `newConfig` inputs.
+ * - Shallow-merges non-object fields.
+ * - For known fields:
+ *   - `alias`: merged with later values overwriting earlier ones per key
+ *   - `transformers`: concatenated in order
  *
- * The merge is performed in-place on the oldConfig object.
- *
- * @param oldConfig - The base configuration object (will be modified)
- * @param newConfig - The configuration object to merge
- * @returns Merged configuration object (same reference as oldConfig)
+ * @param oldConfig - Base configuration (left-side)
+ * @param newConfig - Configuration to apply (right-side)
+ * @returns A new merged configuration object
  *
  * @example
  * ```typescript
- * const baseConfig = {
- *   aliases: { '@components': './src/components' },
- *   transformers: ['ts', 'jsx']
- * };
- *
- * const newConfig = {
- *   aliases: { '@utils': './src/utils' },
- *   debug: true
- * };
- *
- * const merged = mergeConfig(baseConfig, newConfig);
- * // Result: {
- * //   aliases: { '@components': './src/components', '@utils': './src/utils' },
- * //   transformers: ['ts', 'jsx'],
- * //   debug: true
- * // }
+ * const baseConfig = { alias: { '@components': './src/components' } };
+ * const addlConfig = { alias: { '@utils': './src/utils' }, debug: true as any };
+ * const merged = mergeConfig(baseConfig, addlConfig);
+ * // alias => { '@components': './src/components', '@utils': './src/utils' }
+ * // debug => true
  * ```
  */
 export function mergeConfig(

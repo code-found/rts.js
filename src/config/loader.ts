@@ -24,25 +24,13 @@ const loadConfig = (file: string) => {
 };
 
 /**
- * Load configuration file with error handling
+ * Load configuration file without additional wrapping.
  *
- * This function provides a safe way to load configuration files with proper
- * error handling. It wraps the loadConfig function to catch and handle
- * common errors like missing files or invalid JSON.
+ * This function simply delegates to `loadConfig` so callers can decide how
+ * to handle errors (missing files, invalid JSON, etc.).
  *
  * @param file - Path to the configuration file
  * @returns Configuration object
- * @throws {Error} If the file cannot be loaded or parsed
- *
- * @example
- * ```typescript
- * try {
- *   const config = loadConfigFile('./rts.config.json');
- *   // Use config
- * } catch (error) {
- *   console.error('Failed to load config:', error.message);
- * }
- * ```
  */
 const loadConfigFile = (file: string) => {
   const config = loadConfig(file);

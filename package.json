@@ -80,7 +80,7 @@
   "license": "ISC",
   "dependencies": {
     "@swc/core": "^1.13.3",
-    "t-packer": "^0.0.1"
+    "t-packer": "^0.0.2"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.1.3",

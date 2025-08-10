@@ -2,24 +2,26 @@ import fs from "node:fs";
 import Module, { type ResolveHookContext } from "node:module";
 import path from "node:path";
 import process from "node:process";
+import { ModuleTransformer, type TransformerHook } from "t-packer";
 
 // Get Node.js major version for compatibility handling
-const major = Number(process.versions.node.split(".")[0].slice(1));
+// `process.versions.node` is like "20.11.1"; take the first segment as a number
+const majorVersion = process.versions.node.split(".")[0];
+const major = Number(
+  majorVersion[0] === "v" ? majorVersion.slice(1) : majorVersion,
+);
 
-/**
- * Interface for transformer hooks that can transform specific file types
- * Each transformer defines which file extensions it can handle and provides
- * a transformation function to convert the source code
- */
-export interface TransformerHook {
-  /** File extensions this transformer can handle (e.g., ['.ts', '.tsx']) */
-  exts: string[];
-  /** The transformation function that converts source code */
-  hook: TransformProgram;
+interface NodeModuleLike {
+  _compile: (code: string, filename: string) => unknown;
 }
 
-/** Type definition for the transformation function */
-export type TransformProgram = (code: string, src: string) => string;
+interface ModuleWithInternals {
+  _resolveFilename: (request: string, parent: unknown) => string;
+  _extensions: Record<
+    string,
+    (mod: NodeModuleLike, filename: string) => unknown
+  >;
+}
 
 /**
  * Module resolver class that handles module path resolution and caching
@@ -33,16 +35,17 @@ export type TransformProgram = (code: string, src: string) => string;
  * The resolver integrates with Node.js module system by overriding
  * the module resolution and loading mechanisms.
  */
-export class ModuleResolver {
+export class ModuleResolver extends ModuleTransformer {
   /** Cache for resolved module paths to improve performance */
   private cache: Map<string, string> = new Map();
   /** Map of module aliases to their target paths */
   private aliases: Map<string, string[]> = new Map();
-  /** List of registered transformers for different file types */
-  private transformers: TransformerHook[] = [];
+
   /** Store original loaders for cleanup */
-  private oldLoaders: Map<string, (mod: any, filename: string) => any> =
-    new Map();
+  private oldLoaders: Map<
+    string,
+    (mod: NodeModuleLike, filename: string) => unknown
+  > = new Map();
   /** Registration cleanup function */
   private revertRegister?: {
     deregister: () => void;
@@ -53,6 +56,7 @@ export class ModuleResolver {
    * @param transformers - Initial list of transformers to register
    */
   constructor(transformers: TransformerHook[] = []) {
+    super();
     for (const transformer of transformers) {
       this.addTransformer(transformer);
     }
@@ -84,26 +88,6 @@ export class ModuleResolver {
   }
 
   /**
-   * Register a transformer hook for specific file types
-   *
-   * Transformers are responsible for converting source code from one format
-   * to another (e.g., TypeScript to JavaScript, CSS to JS modules).
-   *
-   * @param transformer - The transformer hook to register
-   */
-  addTransformer(transformer: TransformerHook) {
-    this.transformers.push(transformer);
-  }
-
-  /**
-   * Remove a previously registered transformer
-   * @param transformer - The transformer hook to remove
-   */
-  removeTransformer(transformer: TransformerHook) {
-    this.transformers = this.transformers.filter((t) => t !== transformer);
-  }
-
-  /**
    * Register hooks with Node.js module system
    *
    * This method sets up the module resolution and loading hooks.
@@ -128,27 +112,41 @@ export class ModuleResolver {
       });
     } else {
       // Polyfill for Node.js <24
-      const origResolve = (Module as any)._resolveFilename;
-      (Module as any)._resolveFilename = (specifier, context) => {
-        const { url } = this.resolve(specifier, context);
+      const origResolve = (Module as unknown as ModuleWithInternals)
+        ._resolveFilename;
+      (Module as unknown as ModuleWithInternals)._resolveFilename = (
+        specifier,
+        context,
+      ) => {
+        const { url } = this.resolve(specifier, context as ResolveHookContext);
         return origResolve.apply(this, [url ?? specifier, context]);
       };
 
       // Register custom loaders for supported file extensions
-      const extensions = this.transformers.flatMap((t) => t.exts);
-      const originJSLoader = (Module as any)._extensions[".js"];
+      const extensions = Array.from(this.transformers.keys());
+      const originJSLoader = (Module as unknown as ModuleWithInternals)
+        ._extensions[".js"];
       extensions.forEach((ext) => {
-        const originLoader = (Module as any)._extensions[ext] || originJSLoader;
-        (Module as any)._extensions[ext] = (mod, filename) =>
-          this.loader(mod, filename, ext);
+        const originLoader =
+          (Module as unknown as ModuleWithInternals)._extensions[ext] ||
+          originJSLoader;
+        (Module as unknown as ModuleWithInternals)._extensions[ext] = (
+          mod,
+          filename,
+        ) => this.loader(mod, filename, ext);
         this.oldLoaders.set(ext, originLoader);
       });
 
       this.revertRegister = {
         deregister: () => {
-          (Module as any)._resolveFilename = origResolve;
+          (Module as unknown as ModuleWithInternals)._resolveFilename =
+            origResolve;
           extensions.forEach((ext) => {
-            (Module as any)._extensions[ext] = this.oldLoaders.get(ext);
+            (Module as unknown as ModuleWithInternals)._extensions[ext] =
+              this.oldLoaders.get(ext) as (
+                mod: NodeModuleLike,
+                filename: string,
+              ) => unknown;
           });
         },
       };
@@ -226,7 +224,7 @@ export class ModuleResolver {
    * @param filename - The filename being loaded
    * @param ext - The file extension
    */
-  private loader(mod: any, filename: string, ext: string) {
+  private loader(mod: NodeModuleLike, filename: string, ext: string) {
     const compile = mod._compile;
     const oldLoader = this.oldLoaders.get(ext);
     mod._compile = (code, filename) => {
@@ -248,14 +246,12 @@ export class ModuleResolver {
    * @returns Transformed code, or empty string if no transformers match
    */
   private transformCode(code: string, filename: string) {
-    const transformers = this.transformers.filter((t) =>
-      t.exts.includes(path.extname(filename)),
-    );
-    if (transformers.length === 0) {
+    if (!this.transformers.has(path.extname(filename))) {
       return "";
     }
-    return transformers.reduce((code, transformer) => {
-      return transformer.hook(code, filename);
-    }, code);
+    return this.transformSync(Buffer.from(code), filename, {
+      target: "es2022",
+      module: "commonjs",
+    }).code.toString();
   }
 }

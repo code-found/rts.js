@@ -1,10 +1,9 @@
 import { loadConfigFromCwd, mergeConfig, type RTSOptions } from "./config";
 import { ModuleResolver } from "./resolver";
-import { TSHook } from "./transformer/ts";
 
 // Create a module resolver instance for handling module resolution
 // This resolver will handle TypeScript, JSX, TSX, and CSS file transformations
-const resolver = new ModuleResolver([TSHook]);
+const resolver = new ModuleResolver();
 
 /**
  * Register RTS (Runtime Transformer System) hooks for Node.js module loading

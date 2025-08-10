@@ -12,8 +12,8 @@ importers:
         specifier: ^1.13.3
         version: 1.13.3
       t-packer:
-        specifier: ^0.0.1
-        version: 0.0.1
+        specifier: ^0.0.2
+        version: 0.0.2
     devDependencies:
       '@biomejs/biome':
         specifier: ^2.1.3
@@ -1068,8 +1068,8 @@ packages:
     resolution: {integrity: sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw==}
     engines: {node: '>=8'}
 
-  t-packer@0.0.1:
-    resolution: {integrity: sha512-yeK1Vhjq4ZVgkKezY2dBkVZWKY9tRYwSmuIX1wqJ5/K2dxNKgBLaVTLMwvMoBLCKXFj263KNdqxKEBZADzlSsg==}
+  t-packer@0.0.2:
+    resolution: {integrity: sha512-RA1ieHoP5wp5/f2p6htK3h2hFvajEGs4fGTEiYLX+d79lGDdWasJfGHbjCUUYNv35UErDO7mQU5EnCRN8Fv99w==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -2176,7 +2176,7 @@ snapshots:
     dependencies:
       has-flag: 4.0.0
 
-  t-packer@0.0.1:
+  t-packer@0.0.2:
     dependencies:
       '@swc/core': 1.13.3
       commander: 14.0.0
