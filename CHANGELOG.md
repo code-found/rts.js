@@ -1,5 +1,18 @@
 # rts.js
 
+## 0.0.10
+
+### Patch Changes
+
+- 2b36c44: add tsx file support
+
+  - use t-packer to transform ts and tsx file
+  - refloctor the module resolver
+
+  rts command support
+
+  - now you can use rts to run ts files
+
 ## 0.0.9
 
 ### Patch Changes
