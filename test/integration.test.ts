@@ -42,8 +42,10 @@ test("RTS should work with basic configuration", (t) => {
 test("RTS should work with custom transformers", (t) => {
   const customTransformer = {
     exts: [".txt"],
-    hook: (code: string) => {
-      return `export default ${JSON.stringify(code)};`;
+    transformSync: (code: Buffer) => {
+      return {
+        code: Buffer.from(`export default ${code.toString("utf-8")};`),
+      };
     },
   };
 
@@ -60,8 +62,10 @@ test("RTS should work with custom transformers", (t) => {
 test("RTS should handle complex configuration", (t) => {
   const customTransformer = {
     exts: [".css"],
-    hook: (code: string) => {
-      return `export default ${JSON.stringify(code)};`;
+    transformSync: (code: Buffer) => {
+      return {
+        code: Buffer.from(`export default ${code.toString("utf-8")};`),
+      };
     },
   };
 
@@ -154,17 +158,29 @@ test("RTS should work with large alias configurations", (t) => {
 test("RTS should work with multiple transformers", (t) => {
   const transformer1 = {
     exts: [".ts"],
-    hook: (code: string) => code,
+    transformSync: (code: Buffer) => {
+      return {
+        code: Buffer.from(code.toString("utf-8")),
+      };
+    },
   };
 
   const transformer2 = {
     exts: [".tsx"],
-    hook: (code: string) => code,
+    transformSync: (code: Buffer) => {
+      return {
+        code: Buffer.from(code.toString("utf-8")),
+      };
+    },
   };
 
   const transformer3 = {
     exts: [".css"],
-    hook: (code: string) => `export default ${JSON.stringify(code)};`,
+    transformSync: (code: Buffer) => {
+      return {
+        code: Buffer.from(`export default ${code.toString("utf-8")};`),
+      };
+    },
   };
 
   const options = {
