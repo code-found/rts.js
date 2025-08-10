@@ -24,6 +24,7 @@
     "type": "git",
     "url": "https://github.com/code-found/rts.js.git"
   },
+
   "files": [
     "dist",
     "src",
