@@ -1,5 +1,11 @@
 # rts.js
 
+## 0.0.11
+
+### Patch Changes
+
+- 11abb5e: fix(resolver): fix the ts resolve bug for node veriosn >=24
+
 ## 0.0.10
 
 ### Patch Changes
