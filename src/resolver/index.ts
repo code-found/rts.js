@@ -226,7 +226,16 @@ export class ModuleResolver extends ModuleTransformer {
     specifier: string,
     context: ResolveHookContext,
   ): { url?: string } {
-    const { parentURL = "" } = context;
+    /**
+     * bugfix: fix the bug that context is null on node 18.
+     *
+     * on node 18,context will be null.
+     * not very clear know if only node 18 is like this.
+     * on my windows with node 23 it sis ok.
+     * but on mac with node 18 the bug come out.
+     *
+     */
+    const { parentURL = "" } = context || {};
     const cacheKey = `${specifier}:${parentURL}`;
     let url = this.cache.get(cacheKey);
 
