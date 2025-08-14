@@ -30,6 +30,8 @@ export const EXTENSIONS = [
   ".ts",
   ".jsx",
   ".tsx",
+  ".mts",
+  ".cts",
   ".mjs",
   ".cjs",
   ".json",
@@ -90,7 +92,10 @@ export class ModuleResolver extends ModuleTransformer {
    * Create a new ModuleResolver instance
    * @param transformers - Initial list of transformers to register
    */
-  constructor(transformers: TransformerHook[] = []) {
+  constructor(
+    transformers: TransformerHook[] = [],
+    private module: "esm" | "commonjs" = "commonjs",
+  ) {
     super();
     for (const transformer of transformers) {
       this.addTransformer(transformer);
@@ -136,7 +141,7 @@ export class ModuleResolver extends ModuleTransformer {
       // Use native registerHooks for Node.js >=24
       this.revertRegister = Module.registerHooks({
         resolve: (specifier, context, nextResolve) => {
-          // 支持 ts
+          // support ts
           const { url } = this.resolve(specifier, context);
           if (url) {
             return {
@@ -246,7 +251,7 @@ export class ModuleResolver extends ModuleTransformer {
           for (const target of targets) {
             let file: string | null = null;
             file = specifier.replace(alias, target);
-            // 2. 处理相对路径
+            // resolve the relative path
             if (file.startsWith("./") || file.startsWith("../")) {
               file = parentURL ? resolve(dirname(parentURL), file) : file;
             }
@@ -326,7 +331,14 @@ export class ModuleResolver extends ModuleTransformer {
     }
     return this.transformSync(Buffer.from(code), filename, {
       target: "es2022",
-      module: "commonjs",
+      module:
+        this.module === "esm"
+          ? /\.c[jt]sx?$/.test(filename)
+            ? "commonjs"
+            : "esm"
+          : /\.m[jt]sx?$/.test(filename)
+            ? "esm"
+            : "commonjs",
     }).code.toString();
   }
 }
