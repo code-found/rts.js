@@ -12,8 +12,8 @@ importers:
         specifier: ^1.13.3
         version: 1.13.3
       t-packer:
-        specifier: ^0.0.3
-        version: 0.0.3
+        specifier: ^0.0.4
+        version: 0.0.4
     devDependencies:
       '@biomejs/biome':
         specifier: ^2.1.3
@@ -684,10 +684,6 @@ packages:
     resolution: {integrity: sha512-m6FAo/spmsW2Ab2fU35JTYwtOKa2yAwXSwgjSv1TJzh4Mh7mC3lzAOVLBprb72XsTrgkEIsl7YrFNAiDiRhIGg==}
     engines: {node: '>=12'}
 
-  install@0.13.0:
-    resolution: {integrity: sha512-zDml/jzr2PKU9I8J/xyZBQn8rPCAY//UOYNmR01XwNwyfhEWObo2SWfSl1+0tm1u6PhxLwDnfsT/6jB7OUxqFA==}
-    engines: {node: '>= 0.10'}
-
   irregular-plurals@3.5.0:
     resolution: {integrity: sha512-1ANGLZ+Nkv1ptFb2pa8oG8Lem4krflKuX/gINiHJHjJUKaJHk/SXk5x6K3J+39/p0h1RQ2saROclJJ+QLvETCQ==}
     engines: {node: '>=8'}
@@ -1068,8 +1064,8 @@ packages:
     resolution: {integrity: sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw==}
     engines: {node: '>=8'}
 
-  t-packer@0.0.3:
-    resolution: {integrity: sha512-URo2Yi73gaQATSw+4zV1LlhxUa/2kfD4fnV6B5LHw/6XjhDmowJnRmaQj6wx/rkJyx9VaC1TrFrVhUT4zaMANg==}
+  t-packer@0.0.4:
+    resolution: {integrity: sha512-2/QaWHpTU5JGsu674MXve4Vy24F65FH4EP1Rmgq2ZDdcU8nBYw3Gq5nUOLVySD9+7i72UjD+tx6+X6U8hPkJYw==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -1871,8 +1867,6 @@ snapshots:
 
   indent-string@5.0.0: {}
 
-  install@0.13.0: {}
-
   irregular-plurals@3.5.0: {}
 
   is-extglob@2.1.1: {}
@@ -2176,11 +2170,10 @@ snapshots:
     dependencies:
       has-flag: 4.0.0
 
-  t-packer@0.0.3:
+  t-packer@0.0.4:
     dependencies:
       '@swc/core': 1.13.3
       commander: 14.0.0
-      install: 0.13.0
       pnpm: 10.14.0
     transitivePeerDependencies:
       - '@swc/helpers'
