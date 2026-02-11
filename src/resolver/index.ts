@@ -1,5 +1,5 @@
 import fs from "node:fs";
-import Module, { type ResolveHookContext } from "node:module";
+import Module, { type ResolveHookContext,isBuiltin } from "node:module";
 import path, { dirname, resolve } from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
@@ -25,11 +25,48 @@ interface ModuleWithInternals {
     (mod: NodeModuleLike, filename: string) => unknown
   >;
 }
+/**
+ * Check if a module URL or specifier is a Node.js built-in module
+ *
+ * This function uses Node.js's built-in `isBuiltin` method from `node:module` module,
+ * which is the most reliable and future-proof way to detect built-in modules.
+ *
+ * @param url - The module URL or specifier to check
+ * @returns True if it's a built-in module, false otherwise
+ *
+ * @example
+ * isBuiltIn("node:fs") // true
+ * isBuiltIn("fs") // true
+ * isBuiltIn("node:path") // true
+ * isBuiltIn("/path/to/file.js") // false
+ * isBuiltIn("./module.js") // false
+ */
+export const isBuiltinModule = (url: string): boolean => {
+  // Normalize URL: remove protocol (node:), query params, and hash
+  let normalized = url;
+
+  // Remove node: protocol if present
+  if (normalized.startsWith("node:")) {
+    normalized = normalized.slice("node:".length);
+  }
+
+  // Remove query parameters and hash
+  normalized = normalized.split("?")[0].split("#")[0];
+
+  // For file URLs, return false immediately
+  if (normalized.startsWith("file:")) {
+    return false;
+  }
+
+  // Use Node.js's built-in isBuiltin method for reliable detection
+  return isBuiltin(normalized);
+};
+
 export const EXTENSIONS = [
   ".js",
   ".ts",
-  ".jsx",
   ".tsx",
+  ".jsx",
   ".mts",
   ".cts",
   ".mjs",
@@ -153,7 +190,7 @@ export class ModuleResolver extends ModuleTransformer {
         },
         load: (url, parent, nextLoad) => {
           // if it is not a builtin module
-          if (url.includes(path.sep)) {
+          if (!isBuiltinModule(url)) {
             const result = this.load(url);
             if (result) {
               return {
@@ -255,7 +292,7 @@ export class ModuleResolver extends ModuleTransformer {
             if (file.startsWith("./") || file.startsWith("../")) {
               file = parentURL ? resolve(dirname(parentURL), file) : file;
             }
-            if (file.includes(path.sep)) {
+            if (!isBuiltinModule(file)) {
               file = tryToFindFile(file ?? "");
               if (file) {
                 url = file;
