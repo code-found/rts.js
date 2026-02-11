@@ -1,5 +1,11 @@
 # rts.js
 
+## 0.0.13-alpha.0
+
+### Patch Changes
+
+- Use Node.js isBuiltin for reliable builtin module detection
+
 ## 0.0.12
 
 ### Patch Changes
