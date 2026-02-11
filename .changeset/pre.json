@@ -1,0 +1,10 @@
+{
+  "mode": "pre",
+  "tag": "alpha",
+  "initialVersions": {
+    "rts.js": "0.0.12"
+  },
+  "changesets": [
+    "cool-windows-act"
+  ]
+}
