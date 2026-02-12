@@ -1,5 +1,5 @@
 import { loadConfigFromCwd, mergeConfig, type RTSOptions } from "./config";
-import { ModuleResolver } from "./resolver";
+import { register, transformer, setAlias } from "./resolver";
 
 /**
  * Register RTS (Runtime Transformer System) hooks for Node.js module loading
@@ -68,21 +68,20 @@ export const registerRTS = (options?: RTSOptions): (() => void) => {
   ) as RTSOptions;
 
   //  create resolver with module type configuration
-  const resolver = new ModuleResolver(
-    finalOptions.transformers ?? [],
-    finalOptions.module ?? "commonjs",
-  );
 
   //  apply alias
   if (finalOptions.alias) {
-    resolver.setAlias(finalOptions.alias);
+    setAlias(finalOptions.alias);
   }
-
+  if (options?.transformers) {
+    for (const trasnformerHook of options.transformers) {
+      transformer.addTransformer(trasnformerHook);
+    }
+  }
+  transformer.module = finalOptions.module || "esm";
   //  register hooks
-  resolver.register();
+  register();
 
   //  return cleanup function
-  return () => {
-    resolver.revert();
-  };
+  return () => {};
 };
