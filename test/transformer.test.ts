@@ -1,9 +1,8 @@
 import test from "ava";
-import { ModuleTransformer } from "../src/resolver";
+import { transformer } from "../src/resolver/transformer";
 
 test("TS support should be available", (t) => {
-  const mt = new ModuleTransformer();
-  const result = mt
+  const result = transformer
     .transformSync(Buffer.from("const x: number = 1"), "a.ts", {
       target: "es2022",
       module: "commonjs",
@@ -14,8 +13,7 @@ test("TS support should be available", (t) => {
 });
 
 test("TSX support should be available", (t) => {
-  const mt = new ModuleTransformer();
-  const result = mt
+  const result = transformer
     .transformSync(Buffer.from("export const C=()=>null"), "a.tsx", {
       target: "es2022",
       module: "commonjs",
@@ -38,7 +36,7 @@ test("TSX should compile component with props and fragments", (t) => {
       );
     }
   `;
-  const mt = new ModuleTransformer();
+  const mt = transformer
   const out = mt
     .transformSync(Buffer.from(code), "list.tsx", {
       target: "es2022",
@@ -57,7 +55,7 @@ test("TSX should compile component with children and spread props", (t) => {
       <button {...rest}>{children}</button>
     );
   `;
-  const mt = new ModuleTransformer();
+  const mt = transformer
   const out = mt
     .transformSync(Buffer.from(code), "button.tsx", {
       target: "es2022",
@@ -83,7 +81,7 @@ test("TSHook should transform TypeScript code", (t) => {
     export { user };
   `;
 
-  const mt = new ModuleTransformer();
+  const mt = transformer
   const result = mt
     .transformSync(Buffer.from(typescriptCode), "test.ts", {
       target: "es2022",
@@ -111,7 +109,7 @@ test("TSHook should transform TSX code", (t) => {
     export default Component;
   `;
 
-  const mt = new ModuleTransformer();
+  const mt = transformer
   const result = mt
     .transformSync(Buffer.from(tsxCode), "test.tsx", {
       target: "es2022",
@@ -125,7 +123,7 @@ test("TSHook should transform TSX code", (t) => {
 });
 
 test("TSHook should handle empty code", (t) => {
-  const mt = new ModuleTransformer();
+  const mt = transformer
   const result = mt
     .transformSync(Buffer.from(""), "empty.ts", {
       target: "es2022",
@@ -140,7 +138,7 @@ test("TSHook should handle empty code", (t) => {
 
 test("TSHook should handle simple TypeScript", (t) => {
   const simpleCode = "const x: number = 42;";
-  const mt = new ModuleTransformer();
+  const mt = transformer
   const result = mt
     .transformSync(Buffer.from(simpleCode), "simple.ts", {
       target: "es2022",
@@ -158,7 +156,7 @@ test("TSHook should handle imports and exports", (t) => {
     export default Component;
   `;
 
-  const mt = new ModuleTransformer();
+  const mt = transformer
   const result = mt
     .transformSync(Buffer.from(code), "imports.ts", {
       target: "es2022",
@@ -184,7 +182,7 @@ test("TS transformer should error on legacy decorators by default", (t) => {
     }
   `;
 
-  const mt = new ModuleTransformer();
+  const mt = transformer
   t.throws(() => {
     mt.transformSync(Buffer.from(code), "decorators.ts", {
       target: "es2022",
@@ -201,7 +199,7 @@ test("TSHook should handle async/await", (t) => {
     }
   `;
 
-  const mt = new ModuleTransformer();
+  const mt = transformer
   const result = mt
     .transformSync(Buffer.from(code), "async.ts", {
       target: "es2022",
@@ -222,7 +220,7 @@ test("TSHook should handle generics", (t) => {
     const result = identity<string>('hello');
   `;
 
-  const mt = new ModuleTransformer();
+  const mt = transformer
   const result = mt
     .transformSync(Buffer.from(code), "generics.ts", {
       target: "es2022",
@@ -245,7 +243,7 @@ test("TSHook should handle JSX with React.createElement", (t) => {
     export default Component;
   `;
 
-  const mt = new ModuleTransformer();
+  const mt = transformer
   const result = mt
     .transformSync(Buffer.from(code), "jsx.tsx", {
       target: "es2022",
@@ -276,7 +274,7 @@ test("TSHook should handle complex TypeScript features", (t) => {
     }
   `;
 
-  const mt = new ModuleTransformer();
+  const mt = transformer
   const result = mt
     .transformSync(Buffer.from(code), "complex.ts", {
       target: "es2022",
