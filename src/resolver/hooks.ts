@@ -77,7 +77,7 @@ const resolveModule = (specifier: string, context: ResolveHookContext) => {
           file = specifier.replace(alias, target);
           // resolve the relative path
           if (file.startsWith("./") || file.startsWith("../")) {
-            file = parentURL ? pathResolve(dirname(parentURL), file) : file;
+            file = parentURL ? pathResolve(file) : file;
           }
           if (!isBuiltinModule(file)) {
             file = tryToFindFile(file ?? "");
