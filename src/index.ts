@@ -1,9 +1,5 @@
 import { loadConfigFromCwd, mergeConfig, type RTSOptions } from "./config";
-import { ModuleResolver } from "./resolver";
-
-// Create a module resolver instance for handling module resolution
-// This resolver will handle TypeScript, JSX, TSX, and CSS file transformations
-const resolver = new ModuleResolver();
+import { register, transformer, setAlias } from "./resolver";
 
 /**
  * Register RTS (Runtime Transformer System) hooks for Node.js module loading
@@ -71,23 +67,21 @@ export const registerRTS = (options?: RTSOptions): (() => void) => {
     options ?? {},
   ) as RTSOptions;
 
+  //  create resolver with module type configuration
+
   //  apply alias
   if (finalOptions.alias) {
-    resolver.setAlias(finalOptions.alias);
+    setAlias(finalOptions.alias);
   }
-
-  //  apply transformers
-  if (finalOptions.transformers) {
-    for (const transformer of finalOptions.transformers) {
-      resolver.addTransformer(transformer);
+  if (options?.transformers) {
+    for (const trasnformerHook of options.transformers) {
+      transformer.addTransformer(trasnformerHook);
     }
   }
-
+  transformer.module = finalOptions.module || "esm";
   //  register hooks
-  resolver.register();
+  register();
 
   //  return cleanup function
-  return () => {
-    resolver.revert();
-  };
+  return () => {};
 };

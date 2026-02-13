@@ -1,6 +1,6 @@
 {
   "name": "rts.js",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "description": "nodejs runtime transformer,cans transform ts、js、jsx、tsx、css code to nodejs code",
   "main": "src/index.ts",
   "types": "src/index.ts",
@@ -80,7 +80,7 @@
   "license": "ISC",
   "dependencies": {
     "@swc/core": "^1.13.3",
-    "t-packer": "^0.0.3"
+    "t-packer": "^0.0.4"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.1.3",

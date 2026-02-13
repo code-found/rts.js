@@ -8,6 +8,8 @@ export interface RTSOptions {
   alias?: Record<string, string[] | string>;
   /** Custom transformers for additional file type support */
   transformers?: TransformerHook[];
+  /** Default module type for transformation ("esm" or "commonjs") */
+  module?: "esm" | "commonjs";
 }
 
 /**
@@ -38,7 +40,7 @@ export function mergeConfig(
 ): RTSOptions {
   if (!newConfig || typeof newConfig !== "object")
     return oldConfig as RTSOptions;
-  const target: RTSOptions = { ...oldConfig };
+  const target: Partial<RTSOptions> = { ...oldConfig };
   for (const key in newConfig) {
     switch (key) {
       case "alias":
@@ -50,11 +52,15 @@ export function mergeConfig(
           ...(newConfig.transformers ?? []),
         ];
         break;
+      case "module":
+        // module is a single value, not an array, so newConfig overwrites oldConfig
+        target.module = newConfig.module;
+        break;
       default:
-        target[key] = newConfig[key];
+        (target as Record<string, unknown>)[key] = (newConfig as Record<string, unknown>)[key];
     }
   }
-  return target;
+  return target as RTSOptions;
 }
 
 export { loadConfigFromCwd } from "./loader";
