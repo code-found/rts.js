@@ -1,5 +1,6 @@
 import { loadConfigFromCwd, mergeConfig, type RTSOptions } from "./config";
 import { register, transformer, setAlias } from "./resolver";
+export type { RTSOptions } from "./config";
 
 /**
  * Register RTS (Runtime Transformer System) hooks for Node.js module loading

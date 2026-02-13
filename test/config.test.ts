@@ -74,11 +74,21 @@ test("loadConfigFromCwd returns undefined when no file", (t) => {
 test("mergeConfig merges alias and appends transformers", (t) => {
   const base: RTSOptions = {
     alias: { "@a": "./a" },
-    transformers: [{ exts: [".x"], hook: (c: string) => c }],
+    transformers: [
+      {
+        exts: [".x"],
+        transformSync: (code: Buffer) => ({ code: Buffer.from(code) })
+      },
+    ],
   };
   const next: RTSOptions = {
     alias: { "@b": "./b" },
-    transformers: [{ exts: [".y"], hook: (c: string) => c }],
+    transformers: [
+      {
+        exts: [".y"],
+        transformSync: (code: Buffer) => ({ code: code.toString() })
+      },
+    ],
   };
 
   const merged = mergeConfig(base, next);
