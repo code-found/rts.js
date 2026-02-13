@@ -13,16 +13,15 @@ const major = Number(
 );
 
 export const register = () => {
-  if (major >= 12) {
+  if (major >= 22) {
     // Use native registerHooks for Node.js >=24
     Module.registerHooks({
       resolve: resolveSync,
       load: loadSync,
     });
-    Module.register("./hooks.ts");
   } else {
     // remove the support for node < 12
-    throw new Error("Node.js version < 12 is not supported");
+    throw new Error("Node.js version < 22 is not supported");
   }
 };
 export { transformer } from "./transformer";

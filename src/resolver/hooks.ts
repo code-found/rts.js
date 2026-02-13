@@ -23,7 +23,7 @@ export const loadSync: LoadFunction = (url, parent, nextLoad) => {
     );
     if (code) {
       return {
-        format,
+        format: format === "esm" ? "module" : "commonjs",
         source: code,
         shortCircuit: true,
       };
@@ -44,7 +44,7 @@ export const load: (
     );
     if (code) {
       return {
-        format,
+        format: format === "esm" ? "module" : "commonjs",
         source: code,
         shortCircuit: true,
       };
