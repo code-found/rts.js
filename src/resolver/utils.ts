@@ -59,18 +59,28 @@ export const hasExtension = (filename: string) => /\.[^.]+$/.test(filename);
 export const tryToFindFile = (filename: string) => {
   if (exists(filename)) {
     if (fs.statSync(filename).isDirectory()) {
-      filename = `${filename}${path.sep}index`;
+      // Directory: try index file (don't check hasExtension, it incorrectly treats "index" as extension)
+      for (const ext of EXTENSIONS) {
+        const indexFile = `${filename}${path.sep}index${ext}`;
+        if (fs.existsSync(indexFile)) {
+          return indexFile;
+        }
+      }
     } else {
+      // File exists, return as-is
       return filename;
     }
   }
 
-  // Try adding extensions for extensionless imports only.
-  for (const ext of EXTENSIONS) {
-    if (fs.existsSync(filename + ext)) {
-      return filename + ext;
+  // File doesn't exist - only try adding extensions if no extension provided
+  if (!hasExtension(filename)) {
+    for (const ext of EXTENSIONS) {
+      if (fs.existsSync(filename + ext)) {
+        return filename + ext;
+      }
     }
   }
+
   return null;
 };
 
