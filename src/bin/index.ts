@@ -2,7 +2,16 @@
 
 import { type ChildProcess, spawn } from "child_process";
 import chokidar from "chokidar";
+import fs from "fs";
 import path from "path";
+
+// Determine which register to use:
+// - Production: dist/cjs/register.js (built version)
+// - Development: ./run-ts.js (transforms TS on the fly)
+const distRegisterPath = path.join(process.cwd(), "dist", "cjs", "register.js");
+const REGISTER = fs.existsSync(distRegisterPath)
+  ? distRegisterPath
+  : "./run-ts.js";
 
 // Store the running child process
 let child: ChildProcess | null = null;
@@ -50,7 +59,7 @@ function startChild(args: string[]): void {
   // Spawn child process with RTS
   child = spawn(
     process.execPath,
-    ["-r", "./run-ts.js", entryFile, ...args.slice(1)],
+    ["-r", REGISTER, entryFile, ...args.slice(1)],
     {
       cwd: process.cwd(),
       stdio: "inherit",
@@ -153,7 +162,7 @@ if (command === "watch") {
   // Support both "rts <file>" and "rts run <file>"
   const runArgs = command === "run" ? args.slice(1) : args;
 
-  spawn(process.execPath, ["-r", "./run-ts.js", ...runArgs], {
+  spawn(process.execPath, ["-r", REGISTER, ...runArgs], {
     cwd: process.cwd(),
     stdio: "inherit",
   });
