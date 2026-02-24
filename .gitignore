@@ -103,3 +103,4 @@ pids
 *.tmp
 *.temp
 .claude/
+docs/plans
