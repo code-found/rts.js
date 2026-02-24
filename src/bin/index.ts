@@ -1,12 +1,159 @@
 #!/usr/bin/env node
 
-import { spawn } from "child_process";
-// import { registerRTS } from "../index";
+import { type ChildProcess, spawn } from "child_process";
+import chokidar from "chokidar";
+import path from "path";
 
-// Register RTS hooks when this module is loaded
-// registerRTS();
+// Store the running child process
+let child: ChildProcess | null = null;
 
-spawn(`node`, ["-r", "rts.js/register", ...process.argv.slice(2)], {
-  cwd: process.cwd(),
-  stdio: "inherit",
-});
+/**
+ * Get default watch ignore patterns
+ */
+function getIgnorePatterns(): string[] {
+  return [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/coverage/**",
+    "**/.git/**",
+    "**/*.test.ts",
+    "**/*.spec.ts",
+  ];
+}
+
+/**
+ * Kill the running child process
+ */
+function killChild(): void {
+  if (child) {
+    child.kill("SIGTERM");
+    child = null;
+  }
+}
+
+/**
+ * Run the program with RTS
+ * @param args - Command line arguments
+ * @param watchMode - If true, enables watch mode with file change detection
+ */
+function run(args: string[], watchMode = false): void {
+  const entryFile = args[0];
+
+  if (!entryFile) {
+    console.error("Error: Please specify a file to run");
+    console.error(watchMode ? "Usage: rts watch <file>" : "Usage: rts <file>");
+    process.exit(1);
+  }
+
+  if (watchMode) {
+    console.log(`\n👀 Watching for changes...`);
+    console.log(`   Entry: ${entryFile}`);
+    console.log(`   Press Ctrl+C to stop\n`);
+  }
+
+  // Spawn child process with RTS
+  child = spawn(
+    process.execPath,
+    ["-r", "rts.js/register", entryFile, ...args.slice(1)],
+    {
+      cwd: process.cwd(),
+      stdio: "inherit",
+    },
+  );
+
+  child.on("exit", (code) => {
+    if (watchMode) {
+      if (code !== 0 && code !== null) {
+        console.log(`\n⚠️  Process exited with code ${code}`);
+      }
+      child = null;
+    }
+  });
+}
+
+/**
+ * Watch mode: monitor file changes and restart
+ */
+function watch(args: string[]): void {
+  const watchPaths = process.cwd();
+
+  // Start the child process initially
+  run(args, true);
+
+  // Set up file watcher
+  const watcher = chokidar.watch(watchPaths, {
+    ignored: getIgnorePatterns(),
+    persistent: true,
+    ignoreInitial: true,
+    awaitWriteFinish: {
+      stabilityThreshold: 100,
+      pollInterval: 100,
+    },
+  });
+
+  // Handle file changes
+  watcher.on("change", (filePath) => {
+    const ext = path.extname(filePath);
+    if ([".ts", ".tsx", ".js", ".jsx"].includes(ext)) {
+      console.log(`📝 File changed: ${filePath}`);
+      console.log("\n🔄 Restarting...");
+      killChild();
+      run(args, true);
+    }
+  });
+
+  // Handle add events
+  watcher.on("add", (filePath) => {
+    const ext = path.extname(filePath);
+    if ([".ts", ".tsx", ".js", ".jsx"].includes(ext)) {
+      console.log(`📄 File added: ${filePath}`);
+      console.log("\n🔄 Restarting...");
+      killChild();
+      run(args, true);
+    }
+  });
+
+  // Handle unlink events (file deletion)
+  watcher.on("unlink", (filePath) => {
+    const ext = path.extname(filePath);
+    if ([".ts", ".tsx", ".js", ".jsx"].includes(ext)) {
+      console.log(`❌ File removed: ${filePath}`);
+      console.log("\n🔄 Restarting...");
+      killChild();
+      run(args, true);
+    }
+  });
+
+  // Handle errors
+  watcher.on("error", (error) => {
+    console.error("Watcher error:", error);
+  });
+
+  // Handle Ctrl+C
+  process.on("SIGINT", () => {
+    console.log("\n\n👋 Stopping watcher...");
+    killChild();
+    watcher.close();
+    process.exit(0);
+  });
+
+  process.on("SIGTERM", () => {
+    killChild();
+    watcher.close();
+    process.exit(0);
+  });
+}
+
+// Parse command line arguments
+const args = process.argv.slice(2);
+const command = args[0];
+
+if (command === "watch") {
+  // Watch mode
+  watch(args.slice(1));
+} else {
+  // Run mode (default)
+  // Support both "rts <file>" and "rts run <file>"
+  const runArgs = command === "run" ? args.slice(1) : args;
+  run(runArgs, false);
+}

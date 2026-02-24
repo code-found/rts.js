@@ -1,6 +1,6 @@
 {
   "name": "rts.js",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "description": "nodejs runtime transformer,cans transform ts、js、jsx、tsx、css code to nodejs code",
   "main": "src/index.ts",
   "types": "src/index.ts",
@@ -58,7 +58,9 @@
     "start": "node -r ./run-ts.js src/bin/index.ts",
     "dev": "node -r ./run-ts.js src/bin/index.ts",
     "build": "echo 'Build script - implement as needed'",
+    "pretest": "pnpm run release:build",
     "test": "ava",
+    "test:integration:runtime": "pnpm run release:build && ava \"test/integration/**/*.test.ts\"",
     "test:watch": "ava --watch",
     "test:coverage": "c8 ava",
     "lint": "biome lint .",
@@ -74,12 +76,14 @@
     "release:dry-run": "node -r ./run-ts.js scripts/release.ts release --dry-run",
     "release:build": "node -r ./run-ts.js scripts/release.ts build",
     "release:test": "node -r ./run-ts.js scripts/release.ts test",
-    "release:tag": "node -r ./run-ts.js scripts/release.ts tag"
+    "release:tag": "node -r ./run-ts.js scripts/release.ts tag",
+    "prepare": "husky"
   },
   "author": "Spencer",
   "license": "ISC",
   "dependencies": {
     "@swc/core": "^1.13.3",
+    "chokidar": "^5.0.0",
     "t-packer": "^0.0.4"
   },
   "devDependencies": {
@@ -87,6 +91,17 @@
     "@changesets/cli": "^2.29.5",
     "@types/node": "^24.1.0",
     "ava": "^6.4.1",
-    "c8": "^10.1.3"
+    "c8": "^10.1.3",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "biome check --write",
+      "biome lint --write"
+    ],
+    "*.{json,md}": [
+      "biome format --write"
+    ]
   }
 }

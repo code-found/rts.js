@@ -1,5 +1,17 @@
 # rts.js
 
+## 0.0.14
+
+### Patch Changes
+
+- Improve runtime reliability and release safety across resolver, CLI, and testing workflows.
+
+  - Fix resolver file lookup edge cases, including explicit extension handling and directory index resolution.
+  - Improve CLI/runtime behavior by refining register selection and consolidating run/watch execution flow.
+  - Add real runtime integration tests that execute fixture files through built dist register hooks.
+  - Add PR CI coverage for runtime integration checks and tighten AVA test file matching.
+  - Add pre-commit tooling updates and related workflow polish for safer releases.
+
 ## 0.0.13
 
 ### Patch Changes

@@ -57,7 +57,9 @@ export function mergeConfig(
         target.module = newConfig.module;
         break;
       default:
-        (target as Record<string, unknown>)[key] = (newConfig as Record<string, unknown>)[key];
+        (target as Record<string, unknown>)[key] = (
+          newConfig as Record<string, unknown>
+        )[key];
     }
   }
   return target as RTSOptions;

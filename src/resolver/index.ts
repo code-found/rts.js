@@ -14,7 +14,7 @@ const major = Number(
 
 export const register = () => {
   if (major >= 22) {
-    // Use native registerHooks for Node.js >=24
+    // Use native registerHooks for Node.js >=22
     Module.registerHooks({
       resolve: resolveSync,
       load: loadSync,
@@ -25,4 +25,4 @@ export const register = () => {
   }
 };
 export { transformer } from "./transformer";
-export { setAlias } from "./utils";
+export { clearAliases, clearCache, setAlias, tryToFindFile } from "./utils";

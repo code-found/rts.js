@@ -2,7 +2,12 @@ import test from "ava";
 import fs from "fs";
 import os from "os";
 import path from "path";
-import { register, setAlias, transformer } from "../src/resolver";
+import {
+  register,
+  setAlias,
+  transformer,
+  tryToFindFile,
+} from "../src/resolver";
 
 /**
  * Test suite for the resolver module
@@ -110,8 +115,12 @@ test("transformer should work with custom transformers", (t) => {
   // Add a custom transformer
   const customTransformer = {
     exts: [".custom"],
-    transformSync: (code: Buffer) => ({
-      code: Buffer.from(`module.exports = ${JSON.stringify(code.toString())}`),
+    transformSync: (code: string | Buffer) => ({
+      code: Buffer.from(
+        `module.exports = ${JSON.stringify(
+          typeof code === "string" ? code : code.toString(),
+        )}`,
+      ),
     }),
   };
 
@@ -121,10 +130,14 @@ test("transformer should work with custom transformers", (t) => {
 
   // Test the custom transformer
   const testCode = "Hello, custom!";
-  const result = transformer.transformSync(Buffer.from(testCode), "test.custom", {
-    target: "es2022",
-    module: "commonjs",
-  });
+  const result = transformer.transformSync(
+    Buffer.from(testCode),
+    "test.custom",
+    {
+      target: "es2022",
+      module: "commonjs",
+    },
+  );
 
   t.truthy(result);
   t.truthy(result.code);
@@ -189,4 +202,111 @@ test("resolver should handle edge cases", (t) => {
     register();
     register(); // Should not throw on multiple calls
   });
+});
+
+/**
+ * Test tryToFindFile should find index.ts in directory
+ *
+ * This test verifies that importing a directory path like "./subdir"
+ * correctly resolves to "./subdir/index.ts".
+ *
+ * Bug fix: Previously, hasExtension check incorrectly treated "index"
+ * as a file extension, causing the function to skip extension appending.
+ */
+test("tryToFindFile should find index.ts in directory", (t) => {
+  // Create a temporary directory with index.ts
+  const tempDir = path.join(os.tmpdir(), "rts-test-index");
+  if (!fs.existsSync(tempDir)) {
+    fs.mkdirSync(tempDir, { recursive: true });
+  }
+
+  try {
+    // Create index.ts in the directory
+    const indexFile = path.join(tempDir, "index.ts");
+    fs.writeFileSync(indexFile, "export const foo = 'bar';");
+
+    // Test: tryToFindFile should find index.ts when given directory path
+    const result = tryToFindFile(tempDir);
+
+    t.truthy(result, "Should find the index.ts file");
+    t.true(result?.endsWith("index.ts"), "Should resolve to index.ts");
+  } finally {
+    // Clean up
+    if (fs.existsSync(tempDir)) {
+      fs.rmSync(tempDir, { recursive: true, force: true });
+    }
+  }
+});
+
+/**
+ * Test tryToFindFile should find index.js in directory
+ *
+ * Same as above but for .js extension
+ */
+test("tryToFindFile should find index.js in directory", (t) => {
+  const tempDir = path.join(os.tmpdir(), "rts-test-index-js");
+  if (!fs.existsSync(tempDir)) {
+    fs.mkdirSync(tempDir, { recursive: true });
+  }
+
+  try {
+    const indexFile = path.join(tempDir, "index.js");
+    fs.writeFileSync(indexFile, "module.exports = {};");
+
+    const result = tryToFindFile(tempDir);
+
+    t.truthy(result, "Should find the index.js file");
+    t.true(result?.endsWith("index.js"), "Should resolve to index.js");
+  } finally {
+    if (fs.existsSync(tempDir)) {
+      fs.rmSync(tempDir, { recursive: true, force: true });
+    }
+  }
+});
+
+/**
+ * Test tryToFindFile should not append extension when input already has one
+ *
+ * This test verifies that explicit extension imports stay strict. If "foo.js"
+ * does not exist, resolver should not try "foo.js.ts" or similar fallbacks.
+ */
+test("tryToFindFile should not resolve foo.js to foo.js.ts", (t) => {
+  const tempDir = path.join(os.tmpdir(), "rts-test-explicit-ext");
+  if (!fs.existsSync(tempDir)) {
+    fs.mkdirSync(tempDir, { recursive: true });
+  }
+
+  try {
+    const tsFile = path.join(tempDir, "foo.js.ts");
+    fs.writeFileSync(tsFile, "export const x = 1;");
+
+    const result = tryToFindFile(path.join(tempDir, "foo.js"));
+    t.is(result, null, "Should not resolve explicit extension to another file");
+  } finally {
+    if (fs.existsSync(tempDir)) {
+      fs.rmSync(tempDir, { recursive: true, force: true });
+    }
+  }
+});
+
+/**
+ * Test tryToFindFile should return explicit extension file when it exists
+ */
+test("tryToFindFile should resolve existing foo.js directly", (t) => {
+  const tempDir = path.join(os.tmpdir(), "rts-test-explicit-ext-exists");
+  if (!fs.existsSync(tempDir)) {
+    fs.mkdirSync(tempDir, { recursive: true });
+  }
+
+  try {
+    const jsFile = path.join(tempDir, "foo.js");
+    fs.writeFileSync(jsFile, "module.exports = 1;");
+
+    const result = tryToFindFile(jsFile);
+    t.is(result, jsFile, "Should resolve to the existing explicit file");
+  } finally {
+    if (fs.existsSync(tempDir)) {
+      fs.rmSync(tempDir, { recursive: true, force: true });
+    }
+  }
 });

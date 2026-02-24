@@ -102,3 +102,5 @@ pids
 # Temporary files
 *.tmp
 *.temp
+.claude/
+docs/plans

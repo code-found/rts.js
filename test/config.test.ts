@@ -77,7 +77,7 @@ test("mergeConfig merges alias and appends transformers", (t) => {
     transformers: [
       {
         exts: [".x"],
-        transformSync: (code: Buffer) => ({ code: Buffer.from(code) })
+        transformSync: (code: Buffer) => ({ code: Buffer.from(code) }),
       },
     ],
   };
@@ -86,7 +86,7 @@ test("mergeConfig merges alias and appends transformers", (t) => {
     transformers: [
       {
         exts: [".y"],
-        transformSync: (code: Buffer) => ({ code: code.toString() })
+        transformSync: (code: Buffer) => ({ code: code.toString() }),
       },
     ],
   };
