@@ -83,6 +83,7 @@
   "license": "ISC",
   "dependencies": {
     "@swc/core": "^1.13.3",
+    "chokidar": "^5.0.0",
     "t-packer": "^0.0.4"
   },
   "devDependencies": {
