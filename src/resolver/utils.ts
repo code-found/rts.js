@@ -1,5 +1,5 @@
-import { isBuiltin } from "module";
 import fs from "fs";
+import { isBuiltin } from "module";
 import path from "path";
 
 /**

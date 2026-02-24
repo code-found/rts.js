@@ -1,5 +1,5 @@
-import { ModuleTransformer } from "t-packer";
 import path from "node:path";
+import { ModuleTransformer } from "t-packer";
 
 class AwosomeTransformer extends ModuleTransformer {
   module: "esm" | "commonjs" = "commonjs";

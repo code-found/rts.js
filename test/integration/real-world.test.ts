@@ -1,8 +1,8 @@
 import test from "ava";
-import { transformer } from "../../src/resolver/transformer";
 import fs from "fs";
-import path from "path";
 import os from "os";
+import path from "path";
+import { transformer } from "../../src/resolver/transformer";
 
 const PROJECT_ROOT = process.cwd();
 
@@ -52,7 +52,10 @@ const result = add(1, 2);
 
   const result = transformCode(code, "test.ts");
 
-  t.false(result.includes("import { add }"), "Should transform import statements");
+  t.false(
+    result.includes("import { add }"),
+    "Should transform import statements",
+  );
   t.true(result.includes("require"), "Should convert to require()");
 });
 
@@ -87,8 +90,14 @@ console.log(person.name);
 
   const result = transformCode(code, "test.ts");
 
-  t.false(result.includes("interface Person"), "Should remove interface declarations");
-  t.false(result.includes("name: string"), "Should remove property type annotations");
+  t.false(
+    result.includes("interface Person"),
+    "Should remove interface declarations",
+  );
+  t.false(
+    result.includes("name: string"),
+    "Should remove property type annotations",
+  );
   t.true(result.includes("person.name"), "Should preserve actual code");
 });
 
@@ -130,7 +139,10 @@ async function main() {
   t.true(result.includes("async"), "Should preserve async");
   t.true(result.includes("await"), "Should preserve await");
   // Note: Promise type annotation is removed, but Promise is still used
-  t.false(result.includes("Promise<string>"), "Should remove generic type annotation");
+  t.false(
+    result.includes("Promise<string>"),
+    "Should remove generic type annotation",
+  );
 });
 
 /**
@@ -194,7 +206,10 @@ export class Calculator {
   // ESM to CommonJS transformation
   t.true(result.includes("__esModule"), "Should add __esModule marker");
   t.true(result.includes("get add"), "Should export add using getter");
-  t.true(result.includes("get Calculator"), "Should export Calculator using getter");
+  t.true(
+    result.includes("get Calculator"),
+    "Should export Calculator using getter",
+  );
 });
 
 /**
@@ -213,7 +228,10 @@ const [first, second] = arr;
 
   t.false(result.includes(": number"), "Should remove type annotations");
   t.true(result.includes("x, y"), "Should preserve destructuring");
-  t.true(result.includes("first, second"), "Should preserve array destructuring");
+  t.true(
+    result.includes("first, second"),
+    "Should preserve array destructuring",
+  );
 });
 
 /**

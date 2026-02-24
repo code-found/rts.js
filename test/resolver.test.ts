@@ -2,7 +2,12 @@ import test from "ava";
 import fs from "fs";
 import os from "os";
 import path from "path";
-import { register, setAlias, transformer, tryToFindFile } from "../src/resolver";
+import {
+  register,
+  setAlias,
+  transformer,
+  tryToFindFile,
+} from "../src/resolver";
 
 /**
  * Test suite for the resolver module
@@ -125,10 +130,14 @@ test("transformer should work with custom transformers", (t) => {
 
   // Test the custom transformer
   const testCode = "Hello, custom!";
-  const result = transformer.transformSync(Buffer.from(testCode), "test.custom", {
-    target: "es2022",
-    module: "commonjs",
-  });
+  const result = transformer.transformSync(
+    Buffer.from(testCode),
+    "test.custom",
+    {
+      target: "es2022",
+      module: "commonjs",
+    },
+  );
 
   t.truthy(result);
   t.truthy(result.code);

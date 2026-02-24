@@ -25,4 +25,4 @@ export const register = () => {
   }
 };
 export { transformer } from "./transformer";
-export { setAlias, clearCache, clearAliases, tryToFindFile } from "./utils";
+export { clearAliases, clearCache, setAlias, tryToFindFile } from "./utils";

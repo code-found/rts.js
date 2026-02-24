@@ -1,16 +1,16 @@
-import { dirname, resolve as pathResolve } from "node:path";
-import type { ResolveHookContext, registerHooks } from "node:module";
 import fs from "node:fs";
+import type { ResolveHookContext, registerHooks } from "node:module";
+import { dirname, resolve as pathResolve } from "node:path";
 import { fileURLToPath } from "node:url";
-
+import { transformer } from "./transformer";
 import {
+  addCache,
   getAliases,
   getCache,
   isBuiltinModule,
   tryToFindFile,
-  addCache,
 } from "./utils";
-import { transformer } from "./transformer";
+
 type LoadFunction = Required<Parameters<typeof registerHooks>[0]>["load"];
 
 export const loadSync: LoadFunction = (url, parent, nextLoad) => {

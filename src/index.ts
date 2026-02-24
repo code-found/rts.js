@@ -1,5 +1,12 @@
 import { loadConfigFromCwd, mergeConfig, type RTSOptions } from "./config";
-import { register, transformer, setAlias, clearCache, clearAliases } from "./resolver";
+import {
+  clearAliases,
+  clearCache,
+  register,
+  setAlias,
+  transformer,
+} from "./resolver";
+
 export type { RTSOptions } from "./config";
 
 // Track registration state to prevent duplicate registrations
