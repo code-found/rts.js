@@ -64,9 +64,8 @@ export const tryToFindFile = (filename: string) => {
       return filename;
     }
   }
-  if (hasExtension(filename)) {
-    return fs.existsSync(filename) ? filename : null;
-  }
+
+  // Try adding extensions for extensionless imports only.
   for (const ext of EXTENSIONS) {
     if (fs.existsSync(filename + ext)) {
       return filename + ext;
@@ -108,4 +107,18 @@ export const getAliases = () => aliases;
 export const getCache = (key: string) => cache.get(key);
 export const addCache = (key: string, value: string) => {
   cache.set(key, value);
+};
+
+/**
+ * Clear all cached module resolutions
+ */
+export const clearCache = () => {
+  cache.clear();
+};
+
+/**
+ * Clear all registered aliases
+ */
+export const clearAliases = () => {
+  aliases.length = 0;
 };

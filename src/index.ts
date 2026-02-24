@@ -1,6 +1,9 @@
 import { loadConfigFromCwd, mergeConfig, type RTSOptions } from "./config";
-import { register, transformer, setAlias } from "./resolver";
+import { register, transformer, setAlias, clearCache, clearAliases } from "./resolver";
 export type { RTSOptions } from "./config";
+
+// Track registration state to prevent duplicate registrations
+let isRegistered = false;
 
 /**
  * Register RTS (Runtime Transformer System) hooks for Node.js module loading
@@ -74,15 +77,23 @@ export const registerRTS = (options?: RTSOptions): (() => void) => {
   if (finalOptions.alias) {
     setAlias(finalOptions.alias);
   }
-  if (options?.transformers) {
-    for (const trasnformerHook of options.transformers) {
-      transformer.addTransformer(trasnformerHook);
+  if (finalOptions.transformers) {
+    for (const transformerHook of finalOptions.transformers) {
+      transformer.addTransformer(transformerHook);
     }
   }
   transformer.module = finalOptions.module || "esm";
-  //  register hooks
-  register();
+
+  //  register hooks (prevent duplicate registration)
+  if (!isRegistered) {
+    register();
+    isRegistered = true;
+  }
 
   //  return cleanup function
-  return () => {};
+  return () => {
+    isRegistered = false;
+    clearCache();
+    clearAliases();
+  };
 };
